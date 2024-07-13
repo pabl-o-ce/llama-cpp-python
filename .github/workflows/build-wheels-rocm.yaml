@@ -201,21 +201,11 @@ jobs:
             New-Item $initpath -itemType File -value $newinit -force
             python -m build --wheel
           }
-
-      - name: Upload files to a GitHub release
-        id: upload-release
-        uses: svenstaro/upload-release-action@2.7.0
-        continue-on-error: true
+          
+      - uses: softprops/action-gh-release@v2
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./dist/*.whl
-          tag: rocm
-          file_glob: true
-          make_latest: false
-          overwrite: true
-        
-      - uses: actions/upload-artifact@v3
-        if: steps.upload-release.outcome == 'failure'
-        with:
-          name: 'rocm-wheels'
-          path: ./dist/*.whl
+          files: dist/*
+          # Set tag_name to <tag>-cu<cuda_version>
+          tag_name: ${{ github.ref_name }}-rocm${{ env.ROCM_VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
