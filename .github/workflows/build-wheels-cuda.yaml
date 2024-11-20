@@ -62,6 +62,7 @@ jobs:
           cuda: ${{ matrix.cuda }}
           method: 'network'
           sub-packages: '["nvcc", "cudart", "cublas", "cublas-dev"]'
+          non-cuda-sub-packages: '["libcublas"]'
 
       - name: Install Python Dependencies
         run: python -m pip install build wheel
