@@ -20,7 +20,7 @@ jobs:
         id: set-matrix
         run: |
           $matrix = @{
-              'os' = @('windows-2022')
+              'os' = @('windows-2019')
               'pyver' = @("3.9", "3.10", "3.11", "3.12")
               'cuda' = @("12.1.1", "12.2.2", "12.3.2", "12.4.1")
               'releasetag' = @("basic")
@@ -47,8 +47,7 @@ jobs:
         if: runner.os == 'Windows'
         uses: microsoft/setup-msbuild@v2
         with:
-          vs-version: '17.6'
-          msbuild-architecture: x64
+          vs-version: '[16.11,16.12)'
 
       - uses: actions/checkout@v4
         with:
@@ -79,9 +78,9 @@ jobs:
           key: cuda-${{ matrix.cuda }}-vs-integration
 
       - name: Get Visual Studio Integration
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && steps.vs-integration-cache.outputs.cache-hit != 'true'
         run: |
-          $x = $env:CUDAVER
+          if ($env:CUDAVER -eq '12.1.1') {$x = '12.1.0'} else {$x = $env:CUDAVER}
           $links = (Invoke-RestMethod 'https://raw.githubusercontent.com/Jimver/cuda-toolkit/master/src/links/windows-links.ts').Trim().split().where({$_ -ne ''})
           for ($i=$q=0;$i -lt $links.count -and $q -lt 2;$i++) {if ($links[$i] -eq "'$x',") {$q++}}
           Invoke-RestMethod $links[$i].Trim("'") -OutFile 'cudainstaller.zip'
@@ -92,7 +91,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           $y = (gi '.\MSBuildExtensions').fullname + '\*'
-          (gi 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\*\BuildCustomizations').fullname.foreach({cp $y $_})
+          (gi 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\*\BuildCustomizations').fullname.foreach({cp $y $_})
           $cupath = 'CUDA_PATH_V' + $env:CUDAVER.Remove($env:CUDAVER.LastIndexOf('.')).Replace('.','_')
           echo "$cupath=$env:CONDA_PREFIX" >> $env:GITHUB_ENV
 
