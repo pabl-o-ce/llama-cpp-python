@@ -79,7 +79,7 @@ jobs:
           key: cuda-${{ matrix.cuda }}-vs-integration
 
       - name: Get Visual Studio Integration
-        if: runner.os == 'Windows' && steps.vs-integration-cache.outputs.cache-hit != 'true'
+        if: runner.os == 'Windows'
         run: |
           $x = $env:CUDAVER
           $links = (Invoke-RestMethod 'https://raw.githubusercontent.com/Jimver/cuda-toolkit/master/src/links/windows-links.ts').Trim().split().where({$_ -ne ''})
